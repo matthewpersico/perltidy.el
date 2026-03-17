@@ -8,7 +8,7 @@
 ;; Version: 0.05
 ;; Keywords: tools, convenience, languages
 ;; Package-Requires: ((emacs "25.1"))
-;; URL: https://www.emacswiki.org/emacs/perltidy.el
+;; URL: https://github.com/zakame/perltidy.el/blob/master/perltidy.el
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
