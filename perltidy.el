@@ -1,5 +1,5 @@
-;;; perltidy.el --- Tidy perl code
-
+;;; perltidy.el --- Tidy perl code -*- lexical-binding: t; -*-
+;;
 ;; Copyright (C) 2007-2015 Free Software Foundation, Inc.
 ;;
 ;; Author: Ye Wenbin <wenbinye@gmail.com>
@@ -7,6 +7,8 @@
 ;; Created: 22 Dec 2007
 ;; Version: 0.05
 ;; Keywords: tools, convenience, languages
+;; Package-Requires: ((emacs "25.1"))
+;; URL: https://www.emacswiki.org/emacs/perltidy.el
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -61,15 +63,16 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'cl))
+  (require 'cl-lib)
+  (require 'tramp))
 
 (defgroup perltidy nil
-  "Tidy perl code using perltidy"
+  "Tidy perl code using perltidy."
   :group 'tools
   :group 'pde)
 
 (defcustom perltidy-program "perltidy"
-  "*Program name of perltidy"
+  "*Program name of perltidy."
   :type 'string
   :group 'perltidy)
 
@@ -81,18 +84,18 @@
     "--quiet"
 
     ;; FORMATTING OPTIONS
-    "--no-check-syntax"
-    )
-  "*perltidy run options"
-  :type 'list
+    "--no-check-syntax")
+  "Run options for perltidy."
+  :type '(repeat string)
   :group 'perltidy)
 
 (defcustom perltidy-rcregex "\\.perltidyrc"
-  "perltidyrc file regex"
+  "Regex for perltidyrc file."
   :type 'string
   :group 'perltidy)
 
 (defmacro perltidy-save-point (&rest body)
+  "Hold the save point for BODY."
   (declare (indent 0) (debug t))
   `(let ((old-point (point)))
      ,@body
@@ -100,7 +103,7 @@
 
 ;;;###autoload
 (defun perltidy-region (beg end)
-  "Tidy perl code in the region."
+  "Tidy perl code in the region from BEG to END points."
   (interactive "r")
   (or (get 'perltidy-program 'has-perltidy)
       (if (executable-find perltidy-program)
@@ -111,28 +114,34 @@
     (let ((old-perltidy-env (getenv "PERLTIDY"))
           (remote? (tramp-tramp-file-p buffer-file-name))
           (perltidyrc (perltidy-find-perltidyrc buffer-file-truename))
-          (perltidyrc-remote (expand-file-name "perltidyrc-remote" temporary-file-directory))
-          (perltidy-run-list perltidy-program-params)
-          )
+          (pertidyrc-remote (expand-file-name "perltidyrc-remote" temporary-file-directory))
+          (perltidy-run-list perltidy-program-params))
 
       (if (and (bound-and-true-p remote?)
                perltidyrc)
           (progn
             (require 'tramp-sh)
-            (tramp-sh-handle-copy-file perltidyrc perltidyrc-remote t)
-            (setq perltidyrc perltidyrc-remote)))
-
-      (if perltidyrc
-          (setq perltidy-run-list
-                (append perltidy-run-list
-                        (list (concat "-pro=" perltidyrc)))))
-
+            (copy-file perltidyrc pertidyrc-remote t)
+            (setq perltidyrc pertidyrc-remote)
+            (setq perltidy-run-list
+                  (append perltidy-run-list
+                          (list (concat "-pro=" pertidyrc-remote)))))
+        ;; else
+        (progn
+          (if (string-equal perltidyrc nil )
+              (setq perltidy-run-list
+                    (append perltidy-run-list
+                            (list (concat "-pro=.../.perltidyrc"))))
+            ;; else
+            (progn
+              (setq perltidy-run-list
+                    (append perltidy-run-list
+                            (list (concat "-pro=" perltidyrc))))))))
       (apply #'call-process-region
              (append (list beg end perltidy-program
                            t
                            t
-                           t
-                           )
+                           t)
                      perltidy-run-list)))
     t))
 
@@ -162,7 +171,7 @@
 ;;;###autoload
 (defun perltidy-dwim-safe (arg)
   "Perltidy Do What I Mean safe.
-If region is active call perltidy on the region.
+If ARG region is active call perltidy on the region.
 If inside subroutine, call perltidy on the subroutine,
 otherwise stop."
   (interactive "P")
@@ -189,12 +198,13 @@ otherwise stop."
              end)
         (progn
           (perltidy-region beg end)
-          (font-lock-fontify-buffer)))))
+          (font-lock-ensure)
+          (font-lock-flush)))))
 
 ;;;###autoload
 (defun perltidy-dwim (arg)
   "Perltidy Do What I Mean.
-If region is active call perltidy on the region.
+If ARG region is active call perltidy on the region.
 If inside subroutine, call perltidy on the subroutine,
 otherwise call perltidy for whole buffer."
   (interactive "P")
@@ -218,9 +228,11 @@ otherwise call perltidy for whole buffer."
           (t (setq beg (point-min)
                    end (point-max))))
     (perltidy-region beg end)
-    (font-lock-fontify-buffer)))
+    (font-lock-ensure)
+    (font-lock-flush)))
 
 (defun perltidy-find-perltidyrc (&optional dir rcregex)
+  "Find the perltidy rc file.  Start in DIR, use RCREGEX to match file."
   (unless dir (setq dir (buffer-file-name)))
   (unless rcregex (setq rcregex perltidy-rcregex))
   (setq dir (file-name-directory dir))
