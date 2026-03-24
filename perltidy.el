@@ -128,7 +128,7 @@
                           (list (concat "-pro=" pertidyrc-remote)))))
         ;; else
         (progn
-          (if (string-equal perltidyrc nil )
+          (if perltidyrc)
               (setq perltidy-run-list
                     (append perltidy-run-list
                             (list (concat "-pro=.../.perltidyrc"))))
