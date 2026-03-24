@@ -143,7 +143,7 @@
                            t
                            t)
                      perltidy-run-list)))
-    t))
+    t)
 
 ;;;###autoload
 (defun perltidy-buffer ()
