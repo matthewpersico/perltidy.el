@@ -128,22 +128,22 @@
                           (list (concat "-pro=" pertidyrc-remote)))))
         ;; else
         (progn
-          (if perltidyrc)
+          (if ( perltidyrc )
               (setq perltidy-run-list
                     (append perltidy-run-list
-                            (list (concat "-pro=.../.perltidyrc"))))
+                            (list (concat "-pro=" perltidyrc))))
             ;; else
             (progn
               (setq perltidy-run-list
                     (append perltidy-run-list
-                            (list (concat "-pro=" perltidyrc))))))))
+                            (list (concat "-pro=.../.perltidyrc"))))))))
       (apply #'call-process-region
              (append (list beg end perltidy-program
                            t
                            t
                            t)
                      perltidy-run-list)))
-    t)
+    t))
 
 ;;;###autoload
 (defun perltidy-buffer ()
