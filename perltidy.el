@@ -128,7 +128,7 @@
                           (list (concat "-pro=" perltidyrc-remote)))))
         ;; else
         (progn
-          (if ( perltidyrc )
+          (if perltidyrc
               (setq perltidy-run-list
                     (append perltidy-run-list
                             (list (concat "-pro=" perltidyrc))))
