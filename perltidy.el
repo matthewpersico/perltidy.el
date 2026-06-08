@@ -122,7 +122,7 @@
           (progn
             (require 'tramp-sh)
             (copy-file perltidyrc perltidyrc-remote t)
-            (setq perltidyrc pertidyrc-remote)
+            (setq perltidyrc perltidyrc-remote)
             (setq perltidy-run-list
                   (append perltidy-run-list
                           (list (concat "-pro=" perltidyrc-remote)))))
