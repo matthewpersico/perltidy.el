@@ -125,7 +125,7 @@
             (setq perltidyrc pertidyrc-remote)
             (setq perltidy-run-list
                   (append perltidy-run-list
-                          (list (concat "-pro=" pertidyrc-remote)))))
+                          (list (concat "-pro=" perltidyrc-remote)))))
         ;; else
         (progn
           (if ( perltidyrc )
